@@ -9,21 +9,22 @@ def main(path):
 def input_data(path):
     data  = pd.read_csv(path)
     data = data[['Prospect ID', 'Mobile Number','Phone Number', 'Email', 'Primary Source Campaign', 'eKYC Stage Code', 'Total Payment Amount', 'Created On']]
-    print(f'Data has {data.shape[0]} rows {data.shape1} and columns')
+    print(f'Data has {data.shape[0]} rows {data.shape[1]} and columns')
     return data
 
 def data_cleaning(data):
-    print('------------------ Benging with Data Cleaning ------------------')
+    print('------------------ Benging with Data Cleaning ------------------\n')
     data1 = handle_mob_no(data)
     data2 = handle_ekyc_stage(data1)
     data3 = handle_vendors_data(data2)
     data4 = creating_lead_stage(data3)
     data5 = creating_pivot_agency_wise(data4)
     data6 = craete_excel(data5)
-    print('------------------ DONE! ------------------')
+    print('------------------ DONE! ------------------\n')
+    return data6
 
 def handle_mob_no(data):
-    print('------------------ Filling Mob No column ------------------')
+    print('------------------ Filling Mob No column ------------------\n')
     # ---------------- Task 1 -Fill Mob No from Phone Number where Mob No is empty ----------------
     data_main = data    
     # Fill the null values in 'Mobile Number' with the last 10 digits of 'Phone Number'
@@ -34,14 +35,14 @@ def handle_mob_no(data):
     return data_main
 
 def handle_ekyc_stage(data):
-    print('------------------ Filling e-KYC Stage column ------------------')
+    print('------------------ Filling e-KYC Stage column ------------------\n')
     # ---------------- Task 2 - Fill 'e2_Email' in eKYC Stage Code column ----------------
     data_main = data    
     data_main["eKYC Stage Code"] = data_main['eKYC Stage Code'].fillna('e2_Email')
     return data_main
 
 def handle_vendors_data(data):
-    print('------------------ Merging Vendors Data ------------------')
+    print('------------------ Merging Vendors Data ------------------\n')
     data_main = data
     # Task 3 - 
     csv_url = 'https://docs.google.com/spreadsheets/d/1osDdsySYQdoBZlguvbb_UCZt2wfRbQvhSj8B2qa_RgU/export?format=csv'
@@ -53,9 +54,6 @@ def handle_vendors_data(data):
     vendors_data_req = vendors_data[['TG/YT1 Bitly','campaign', 'Agency']]
     # renaming the columns
     vendors_data_req.columns= ['Bitly Link','Primary Source Campaign','agency']
-    # printing null valuse from each column
-    print(vendors_data_req.isna().sum())
-    print(vendors_data_req.shape[0])
     # removing null 
     vendors_data_req.dropna(how='any', inplace=True)
     # printing null valuse from each column after removing null
@@ -66,7 +64,7 @@ def handle_vendors_data(data):
     return data_merged
 
 def creating_lead_stage(data_merged):
-    print('------------------ Creating Lead Stage column ------------------')
+    print('------------------ Creating Lead Stage column ------------------\n')
     # filling 0 in all NaN values
     data_merged['Total Payment Amount'].fillna(0, inplace=True)
     # adding a new column called Lead Stage
@@ -81,7 +79,7 @@ def creating_lead_stage(data_merged):
     return data_merged_lead
 
 def creating_pivot_agency_wise(data_merged_lead):
-    print('------------------ Pivoting the Data - Agency wise ------------------')
+    print('------------------ Pivoting the Data - Agency wise ------------------\n')
     # grouping data by agency
     agency_groups = data_merged_lead.groupby('agency')
     # from df creating a dict of df 
