@@ -13,7 +13,7 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            var socket = io.connect('http://localhost:5050/uploadPage'); // Your server address
+            var socket = io.connect('http://localhost:5000/'); // Your server address
             //var socket = io('http://localhost:5000', { path: '/socket.io' }); // Your server address
 
             socket.on('connect', function () {
@@ -58,12 +58,6 @@
 
 <body>
     <div class="combine-container">
-        <div class="container">
-            <div class="tab">
-                <button class="tablinks" onclick="navigateTo('/uploadPage')">Upload</button>
-                <button class="tablinks" onclick="navigateTo('/')">Search</button>
-            </div>
-        </div>
         <div class="uploading-process">
             <div class="white-background" id="whiteBackground">
                 <form id="uploadForm" method="post" enctype="multipart/form-data">
@@ -97,6 +91,10 @@
                     </div>
                     <div id="uploadedFiles"></div>
                     <button class="cta" type="submit">Fetch</button> <br />
+                </form>
+                <form>
+                    <div id="uploadedFiles"></div>
+                    <button class="cta" type="submit" formaction="/download_excel">Download</button> <br />
                 </form>
             </div>
         </div>
