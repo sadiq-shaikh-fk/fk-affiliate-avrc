@@ -2,9 +2,10 @@ import pandas as pd
 import warnings
 warnings.filterwarnings("ignore")
 
-def main(path):
+def start(path):
     data = input_data(path)
-    data_cleaning(data)
+    output_data_path = data_cleaning(data)
+    return output_data_path
 
 def input_data(path):
     data  = pd.read_csv(path)
