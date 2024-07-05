@@ -151,7 +151,3 @@ def generate_lead_stage(row):
             return 'L4-Account Opened'
     else:
         return 'L2-in process'
-
-
-path = 'Lead Report - 27th June.csv'
-main(path)
