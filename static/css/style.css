@@ -1,0 +1,351 @@
+body {
+  height: 100vh;
+  background-color: #f6f6f6;
+  margin: 0;
+}
+
+.white-background {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0px 6px 8px rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+  background-color: #fff;
+  width: 540px;
+  padding: 30px;
+}
+
+.item_container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.label {
+  position: relative;
+  line-height: 18px;
+  text-transform: none;
+}
+.cta {
+  border-radius: 4px;
+  background-color: #277aff;
+  width: 200px;
+  height: 45px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 14px;
+  box-sizing: border-box;
+  text-align: left;
+  color: #fff;
+  cursor: pointer;
+}
+
+.cta:hover {
+  transform: scale(1.02);
+  transition: 0.3s ease-in-out;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 0.5px solid #277aff;
+}
+
+.cta-download {
+  background-color: white;
+  color: #277aff;
+  border: 1px solid #277aff;
+}
+
+.heading-upload {
+  display: flex;
+  flex-direction: row;
+  margin-bottom: 20px;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: 0px 10px;
+  font-size: 22px;
+}
+.upload-file-background {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  background-color: #f9f9f9;
+  border: 1px dashed rgba(56, 78, 183, 0.3);
+  box-sizing: border-box;
+  width: 445px;
+  height: 202px;
+  cursor: pointer;
+}
+.drag-drop {
+  color: #0f0f0f;
+}
+.span {
+  color: #333;
+}
+.browse {
+  text-decoration: underline;
+  color: #277aff;
+  cursor: pointer;
+}
+.drag-drop-container {
+  position: relative;
+  line-height: 24px;
+}
+.drag-drop-files {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  padding: 5px;
+}
+.supported-formates-jpeg {
+  position: relative;
+  line-height: 18px;
+  align-items: center;
+  justify-content: center;
+}
+.supported-formats {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  padding: 5px;
+  font-size: 12px;
+  color: #676767;
+}
+.upload-icon {
+  position: absolute;
+  height: 29.5%;
+  width: 15.46%;
+  top: 14.85%;
+  right: 42.29%;
+  bottom: 55.64%;
+  left: 42.25%;
+  max-width: 100%;
+  overflow: hidden;
+  max-height: 100%;
+}
+.file-upload-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 445px;
+  height: 202px;
+  font-size: 16px;
+  color: #483ea8;
+  margin-bottom: 10px;
+}
+.heading-uploaded {
+  display: flex;
+  flex-direction: row;
+  width: 445px;
+  align-items: flex-start;
+  justify-content: flex-start;
+  color: #676767;
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+}
+.heading-uploaded1 {
+  display: flex;
+  flex-direction: row;
+  width: 445px;
+  align-items: flex-start;
+  justify-content: flex-start;
+  color: #676767;
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+}
+.grey-outline {
+  display: flex;
+  align-items: center;
+  padding-top: 5px;
+  padding-left: 10px;
+  padding-right: 10px;
+  border-radius: 4px;
+  background-color: #fff;
+  border: 0.5px solid #e3e3e3;
+  box-sizing: border-box;
+  width: 445px;
+  height: 36px;
+}
+.document-name {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+.loading-bar {
+  border-radius: 10px;
+  background-color: #277aff;
+  background-image: linear-gradient(
+    45deg,
+    #277aff 25%,
+    transparent 25%,
+    transparent 50%,
+    #448cff 50%,
+    #277aff 75%,
+    transparent 75%,
+    transparent
+  );
+  height: 3px;
+  width: 0%; /* Set initial width to 0% */
+}
+
+.vector-icon {
+  height: 43.24%;
+  width: 3.6%;
+  max-width: 100%;
+  overflow: hidden;
+  max-height: 100%;
+  filter: invert(35%) sepia(99%) saturate(7497%) hue-rotate(356deg)
+    brightness(93%) contrast(102%);
+}
+
+.uploading-file-1 {
+  display: flex;
+  flex-direction: column;
+  width: 445px;
+  height: 37px;
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+.green-outline {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding-left: 10px;
+  padding-right: 10px;
+  border-radius: 4px;
+  background-color: #fff;
+  border: 1px solid #11af22;
+  box-sizing: border-box;
+  width: 445px;
+  height: 36px;
+}
+.document-namepdf-wrapper {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+.document-name-1 {
+  display: flex;
+  flex-direction: row;
+  align-items: start;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.delete-img {
+  width: 18px;
+  height: 18px;
+  filter: invert(35%) sepia(99%) saturate(7497%) hue-rotate(356deg)
+    brightness(93%) contrast(102%);
+}
+
+.uploadedFiles {
+  display: flex;
+  flex-direction: column;
+  width: 445px;
+  height: 36px;
+  font-size: 12px;
+  margin-bottom: 20px;
+}
+
+.uploading-file,
+.uploaded-file {
+  margin-bottom: 10px;
+}
+
+.uploading-process {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  background-color: #f6f6f6;
+  text-align: center;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: #0f0f0f;
+  font-family: Mulish;
+}
+
+.upload-icon-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+
+.fa-upload {
+  color: #277aff;
+}
+
+input[type="file"] {
+  display: none; /* Hide the file input */
+}
+
+.drag-over {
+  background-color: #e0e0e0;
+}
+
+.buttons {
+  display: flex;
+  flex-direction: row;
+  width: 445px;
+  justify-content: space-between;
+}
+
+.combine-container {
+  display: flex;
+  flex-direction: column;
+  height: inherit;
+}
+
+.container {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  height: 4.65rem;
+  align-items: center;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+/* Style the tab */
+.tab {
+  overflow: hidden;
+  width: fit-content;
+  height: fit-content;
+  border: 1px solid #ccc;
+  background-color: #f1f1f1;
+  border-radius: 5px;
+}
+
+/* Style the buttons that are used to open the tab content */
+.tab button {
+  background-color: inherit;
+  float: left;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 10px 14px;
+  transition: 0.3s;
+}
+
+/* Change background color of buttons on hover */
+.tab button:hover {
+  background-color: #277aff;
+  color: white;
+}
+
+/* Create an active/current tablink class */
+.tab button.active {
+  background-color: #277aff;
+  color: white;
+}
