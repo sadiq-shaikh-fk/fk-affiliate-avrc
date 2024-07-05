@@ -20,9 +20,9 @@ def data_cleaning(data):
     data3 = handle_vendors_data(data2)
     data4 = creating_lead_stage(data3)
     data5 = creating_pivot_agency_wise(data4)
-    data6 = craete_excel(data5)
+    #data6 = craete_excel(data5)
     print('------------------ DONE! ------------------\n')
-    return data6
+    return data5
 
 def handle_mob_no(data):
     print('------------------ Filling Mob No column ------------------\n')

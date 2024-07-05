@@ -1,14 +1,19 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, send_file
 from flask_socketio import SocketIO
-from flask_cors import CORS
-import tempfile
 from all_functions import start
+from flask_cors import CORS
+import pandas as pd
+import tempfile
+import os
 
 app = Flask(__name__)
 
 # Ensure CORS is enabled
 CORS(app, resources={r"/*": {"origins": "*"}})
 socketio = SocketIO(app, cors_allowed_origins="*")
+
+# Temporary storage for processed file path
+temp_file_path = None
 
 # ------------------------------------ Adding all Routes ------------------------------------
 @app.route("/")
@@ -34,16 +39,29 @@ def fetch():
             file.save(temp_file.name)
             temp_file = temp_file.name
 
-        #session['data'] = temp_file
-        
-        # Store upload process in the session
-        #session['search_params'] = {'process': 'upload', 'data': temp_file}
-        #output_data_path = start(temp_file)
         print(type(temp_file))
         print('File uploaded successfully')
         socketio.emit('upload_status', {'status': 'File uploaded successfully'}, namespace='/')
 
-        return '', 400
+        agency_pivotdf_dict = start(temp_file)
+
+        # Save processed data to a temporary Excel file
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.xlsx') as temp_output:
+            with pd.ExcelWriter(temp_output.name, engine='xlsxwriter') as writer:
+                for key, value in agency_pivotdf_dict.items():
+                    value.to_excel(writer, sheet_name=str(key), index=False)
+            temp_file_path = temp_output.name
+
+        socketio.emit('upload_status', {'status': 'File processed successfully'}, namespace='/')
+        return '', 200
+
+    elif request.method == 'GET':
+        if temp_file_path and os.path.exists(temp_file_path):
+            return send_file(temp_file_path, as_attachment=True, download_name='output.xlsx')
+        else:
+            socketio.emit('upload_status', {'status': 'No processed file available'}, namespace='/')
+            return '', 400
     
+
 if __name__ == '__main__':
     socketio.run(app, debug=True)
