@@ -3,7 +3,7 @@ from flask_socketio import SocketIO
 from flask_cors import CORS
 import pandas as pd
 import tempfile
-from app import start
+from all_functions import start
 
 app = Flask(__name__)
 
