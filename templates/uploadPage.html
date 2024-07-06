@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="initial-scale=1, width=device-width">
-    <title>File Upload with Status</title>
+    <title>File Upload and Download</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;700&display=swap" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
@@ -13,11 +13,11 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            var socket = io.connect('http://localhost:5000/'); // Your server address
-            //var socket = io('http://localhost:5000', { path: '/socket.io' }); // Your server address
+            var socket = io.connect('http://localhost:5000/');
+            var fileProcessed = false;
 
             socket.on('connect', function () {
-                console.log('Connected to WebSocket on /uploadPage');
+                console.log('Connected to WebSocket');
             });
 
             socket.on('upload_status', function (data) {
@@ -25,34 +25,57 @@
                 document.getElementById('uploadStatus').textContent = data.status;
             });
 
-            socket.on('disconnect', function () {
-                console.log('Disconnected from WebSocket on /uploadPage');
-            });
-
             document.getElementById('uploadForm').addEventListener('submit', function (event) {
                 event.preventDefault();
-                var formData = new FormData(this);
-
-                $.ajax({
-                    url: '/fetch',
-                    type: 'POST',
-                    data: formData,
-                    contentType: false,
-                    processData: false,
-                    success: function (response) {
-                        socket.emit('upload_status', { 'status': 'File uploaded successfully' });
-                        window.location.href = '/status?upload=True'; // Navigate to the status page with upload parameter
-                    },
-                    error: function (response) {
-                        socket.emit('upload_status', { 'status': 'No File Selected' });
+                if (!fileProcessed) {
+                    var formData = new FormData(this);
+                    var fileInput = document.getElementById('fileInput');
+                    
+                    if (fileInput.files.length === 0) {
+                        document.getElementById('uploadStatus').textContent = 'Please select a file first';
+                        return;
                     }
-                });
+
+                    $.ajax({
+                        url: '/fetch',
+                        type: 'POST',
+                        data: formData,
+                        contentType: false,
+                        processData: false,
+                        success: function (response) {
+                            document.getElementById('uploadStatus').textContent = response.status;
+                            fileProcessed = true;
+                            document.getElementById('fetchButton').textContent = 'Download';
+                        },
+                        error: function (xhr) {
+                            document.getElementById('uploadStatus').textContent = xhr.responseJSON.status;
+                        }
+                    });
+                } else {
+                    $.ajax({
+                        url: '/fetch',
+                        type: 'GET',
+                        success: function (response, status, xhr) {
+                            var filename = "";
+                            var disposition = xhr.getResponseHeader('Content-Disposition');
+                            if (disposition && disposition.indexOf('attachment') !== -1) {
+                                var filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+                                var matches = filenameRegex.exec(disposition);
+                                if (matches != null && matches[1]) filename = matches[1].replace(/['"]/g, '');
+                            }
+                            var blob = new Blob([response], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+                            var link = document.createElement('a');
+                            link.href = window.URL.createObjectURL(blob);
+                            link.download = filename;
+                            link.click();
+                        },
+                        error: function (xhr) {
+                            document.getElementById('uploadStatus').textContent = xhr.responseJSON.status;
+                        }
+                    });
+                }
             });
         });
-
-        function navigateTo(url) {
-            window.location.href = url;
-        }
     </script>
 </head>
 
@@ -90,11 +113,7 @@
                         <div id="uploadStatus">Status</div>
                     </div>
                     <div id="uploadedFiles"></div>
-                    <button class="cta" type="submit">Fetch</button> <br />
-                </form>
-                <form>
-                    <div id="uploadedFiles"></div>
-                    <button class="cta" type="submit" formaction="/download_excel">Download</button> <br />
+                    <button id="fetchButton" class="cta" type="submit">Fetch</button> <br />
                 </form>
             </div>
         </div>
