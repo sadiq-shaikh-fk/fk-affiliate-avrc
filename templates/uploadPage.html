@@ -9,12 +9,32 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;700&display=swap" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
 
+    <style>
+        .loader {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+            display: none;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+
     <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             var socket = io.connect('http://localhost:5000/');
             var fileProcessed = false;
+            var loader = document.getElementById('loader');
+            var fetchButton = document.getElementById('fetchButton');
 
             socket.on('connect', function () {
                 console.log('Connected to WebSocket');
@@ -36,6 +56,10 @@
                         return;
                     }
 
+                    // Show loader and disable button
+                    loader.style.display = 'block';
+                    fetchButton.disabled = true;
+
                     $.ajax({
                         url: '/fetch',
                         type: 'POST',
@@ -45,13 +69,21 @@
                         success: function (response) {
                             document.getElementById('uploadStatus').textContent = response.status;
                             fileProcessed = true;
-                            document.getElementById('fetchButton').textContent = 'Download';
+                            fetchButton.textContent = 'Download';
+                            fetchButton.disabled = false;
+                            loader.style.display = 'none';
                         },
                         error: function (xhr) {
                             document.getElementById('uploadStatus').textContent = xhr.responseJSON.status;
+                            fetchButton.disabled = false;
+                            loader.style.display = 'none';
                         }
                     });
                 } else {
+                    // Show loader and disable button
+                    loader.style.display = 'block';
+                    fetchButton.disabled = true;
+
                     $.ajax({
                         url: '/fetch',
                         type: 'GET',
@@ -68,9 +100,13 @@
                             link.href = window.URL.createObjectURL(blob);
                             link.download = filename;
                             link.click();
+                            fetchButton.disabled = false;
+                            loader.style.display = 'none';
                         },
                         error: function (xhr) {
                             document.getElementById('uploadStatus').textContent = xhr.responseJSON.status;
+                            fetchButton.disabled = false;
+                            loader.style.display = 'none';
                         }
                     });
                 }
@@ -113,14 +149,15 @@
                         <div id="uploadStatus">Status</div>
                     </div>
                     <div id="uploadedFiles"></div>
+                    <div id="loader" class="loader"></div>
                     <button id="fetchButton" class="cta" type="submit">Fetch</button> <br />
                 </form>
             </div>
         </div>
     </div>
 </body>
-<script src="./static/js/main.js"></script>
-<script src="./static/js/dragdrop.js"></script>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+<script src="{{ url_for('static', filename='js/dragdrop.js') }}"></script>
 <script>
     //navigation code
     function navigateTo(url) {
