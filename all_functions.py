@@ -125,15 +125,6 @@ def creating_pivot_agency_wise(data_merged_lead):
     agency_pivotdf_dict.update(dict(zip(agency_dfs.keys(), pivoted_df)))
     return agency_pivotdf_dict
 
-
-def craete_excel(dict, filepath = 'excel files//output.xlsx'):
-    print('------------------ Creating excel files -------------------\n')
-    agency_pivotdf_dict = dict
-    with pd.ExcelWriter(filepath, engine='xlsxwriter') as writer:
-        for key, value in agency_pivotdf_dict.items():
-            value.to_excel(writer, sheet_name=str(key), index=False)
-    return filepath
-
 # ------------------------- supporting functions ---------------------------
 # Function to extract the last 10 digits of the phone number
 def extract_last_10_digits(phone):
