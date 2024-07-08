@@ -13,7 +13,7 @@ app = Flask(__name__)
 
 # Ensure CORS is enabled
 CORS(app, resources={r"/*": {"origins": "*"}})
-socketio = SocketIO(app, cors_allowed_origins="*", async_mode='gevent')
+socketio = SocketIO(app, cors_allowed_origins="*")
 
 # Temporary storage for processed file path
 temp_file_path = None

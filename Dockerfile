@@ -1,5 +1,5 @@
-# Use Python 3.9 slim image
-FROM python:3.9-slim-buster
+# Use Python 3.11 slim image
+FROM python:3.11-slim-buster
 
 # Set the working directory in the container
 WORKDIR /app
@@ -20,9 +20,6 @@ RUN pip install --no-cache-dir --upgrade pip && \
 EXPOSE 8090
 
 # Define environment variables
-ENV FLASK_APP=main.py
-ENV FLASK_ENV=development
-ENV FLASK_DEBUG=1
 
-# Run Flask development server instead of gunicorn for debugging
-CMD ["flask", "run", "--host=0.0.0.0", "--port=8090"]
+# Run gunicorn with eventlet worker
+CMD ["gunicorn", "--worker-class", "eventlet", "--bind", "0.0.0.0:8090", "main:app"]
