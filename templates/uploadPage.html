@@ -31,7 +31,8 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            var socket = io.connect('http://35.200.161.45:8090/');
+            //var socket = io.connect('http://35.200.161.45:8090/');
+            var socket = io.connect('https://avrc.famekeeda.com');
             var fileProcessed = false;
             var loader = document.getElementById('loader');
             var fetchButton = document.getElementById('fetchButton');
