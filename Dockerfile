@@ -19,8 +19,10 @@ RUN pip install --no-cache-dir --upgrade pip && \
 # Make port 8090 available to the world outside this container
 EXPOSE 8090
 
-# Define environment variable
+# Define environment variables
 ENV FLASK_APP=main.py
+ENV FLASK_ENV=development
+ENV FLASK_DEBUG=1
 
-# Run gunicorn with gevent worker
-CMD ["gunicorn", "--worker-class", "gevent", "--bind", "0.0.0.0:8090", "main:app"]
+# Run Flask development server instead of gunicorn for debugging
+CMD ["flask", "run", "--host=0.0.0.0", "--port=8090"]
