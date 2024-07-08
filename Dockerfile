@@ -1,20 +1,20 @@
 # Use the official Python image from the Docker Hub
-FROM python:3.9-slim
+FROM python:3.9-slim-buster
 
-# Set the working directory
+# Set the working directory in the container
 WORKDIR /app
 
-# Copy the requirements file into the image
-COPY requirements.txt .
+# Copy the current directory contents into the container at /app
+COPY . /app
 
-# Install the dependencies
+# Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the application code into the image
-COPY . .
-
-# Expose the port the app runs on
+# Make port 8090 available to the world outside this container
 EXPOSE 8090
 
-# Run the application
-CMD ["gunicorn", "-k", "gevent", "-b", "0.0.0.0:8090", "main:app"]
+# Define environment variable
+ENV FLASK_APP=main.py
+
+# Run gunicorn
+CMD ["gunicorn", "--bind", "0.0.0.0:8090", "main:app"]
