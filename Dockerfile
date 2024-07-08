@@ -17,4 +17,4 @@ COPY . .
 EXPOSE 8090
 
 # Run the application
-CMD ["gunicorn", "-k", "gevent", "-b", "0.0.0.0:8080", "main:app"]
+CMD ["gunicorn", "-k", "gevent", "-b", "0.0.0.0:8090", "main:app"]
