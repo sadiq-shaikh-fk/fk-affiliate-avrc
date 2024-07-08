@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, send_file
+from werkzeug.utils import secure_filename
 from flask_socketio import SocketIO
 from all_functions import start
 from flask_cors import CORS
@@ -47,7 +48,9 @@ def fetch():
             return '', 400
     
         if file:
-            try:   
+            try:
+                # Use secure_filename here
+                filename = secure_filename(file.filename)
                 with tempfile.NamedTemporaryFile(delete=False, suffix='.csv') as temp_file:
                     file.save(temp_file.name)
                     input_file_path = temp_file.name
