@@ -28,7 +28,7 @@ def fetch():
         if 'file' not in request.files:
             print('Uplaod a file to First')
             socketio.emit('upload_status', {'status':'Uplaod a file to First'}, namespace='/')
-            return '', 400    
+            return '', 400
 
         file = request.files['file']
 
@@ -47,28 +47,32 @@ def fetch():
 
             agency_pivotdf_dict = start(input_file_path)
 
-            # Save processed data to a temporary Excel file
-            output = BytesIO()
-            with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-                for key, value in agency_pivotdf_dict.items():
-                    value.to_excel(writer, sheet_name=str(key), index=False)
-            output.seek(0)
-            
-            # Save to temporary file
-            with tempfile.NamedTemporaryFile(delete=False, suffix='.xlsx') as temp_output:
-                temp_output.write(output.getvalue())
-                temp_file_path = temp_output.name
+        # Save processed data to a temporary Excel file
+        output = BytesIO()
+        with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+            for key, value in agency_pivotdf_dict.items():
+                value.to_excel(writer, sheet_name=str(key), index=False)
+        output.seek(0)
+        
+        # Save to temporary file
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.xlsx') as temp_output:
+            temp_output.write(output.getvalue())
+            temp_file_path = temp_output.name
 
             socketio.emit('upload_status', {'status': 'File processed successfully'}, namespace='/')
             return '', 200
 
     elif request.method == 'GET':
-        if temp_file_path is None:
-            socketio.emit('upload_status', {'status': 'No file has been uploaded and processed yet'}, namespace="/")
-        elif os.path.exists(temp_file_path):
-            return send_file(temp_file_path, as_attachment=True, download_name='output.xlsx', mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        else:
-            socketio.emit('upload_status', {'status': 'No processed file available'}, namespace='/')
+            if temp_file_path is None or not os.path.exists(temp_file_path):
+                socketio.emit('upload_status', {'status': 'No processed file available'}, namespace='/')
+                return '', 404
+            else:
+                return send_file(
+                    temp_file_path,
+                    as_attachment=True,
+                    download_name='output.xlsx',
+                    mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                )
 
     else:
         socketio.emit('upload_status', {'status': 'Unknown error occurred'}, namespace='/')

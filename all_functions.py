@@ -120,7 +120,7 @@ def creating_pivot_agency_wise(data_merged_lead):
         each_df_pivot.rename(columns={'index':'Primary Source Campaign'}, inplace=True)
     
         pivoted_df.append(each_df_pivot)
-
+    
     agency_pivotdf_dict = agency_dfs.copy()
     agency_pivotdf_dict.update(dict(zip(agency_dfs.keys(), pivoted_df)))
     return agency_pivotdf_dict
