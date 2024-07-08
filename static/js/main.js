@@ -56,7 +56,6 @@ function createUploadingFileElement(fileName) {
         <div class="document-name">
             <div class="supported-formates-jpeg">${fileName}</div>
             <img class="vector-icon" src="/static/assets/svg/close.svg" onclick="cancelUpload(this)">
-            <!-- <img class="vector-icon" src="./assets/close.svg" onclick="cancelUpload(this)"> -->
         </div>
     </div>
     <div class="loading-bar">
