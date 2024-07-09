@@ -112,13 +112,15 @@ def creating_pivot_agency_wise(data_merged_lead):
             if col not in each_df_pivot.columns:
                 each_df_pivot[col] = 0
 
-        # merging Bitly Links to it ---- # Create a dictionary to map 'Primary Source Campaign' to 'Bitly Link'
-        campaign_to_bitly = data_merged_lead.set_index('Primary Source Campaign')['Bitly Link'].to_dict()
-
-        # Add 'Bitly Link' column to data_merged_pivot by mapping
-        each_df_pivot['Bitly Link'] = data_merged_lead['Primary Source Campaign'].map(campaign_to_bitly)
+        # renaming pivot column index to Primary Source Campaign
         each_df_pivot.rename(columns={'index':'Primary Source Campaign'}, inplace=True)
     
+        # merging Bitly Links to it ---- # Create a dictionary to map 'Primary Source Campaign' to 'Bitly Link'
+        campaign_to_bitly = each_df.set_index('Primary Source Campaign')['Bitly Link'].to_dict()
+
+        # Add 'Bitly Link' column to data_merged_pivot by mapping
+        each_df_pivot['Bitly Link'] = each_df_pivot['Primary Source Campaign'].map(campaign_to_bitly)
+
         pivoted_df.append(each_df_pivot)
     
     agency_pivotdf_dict = agency_dfs.copy()
