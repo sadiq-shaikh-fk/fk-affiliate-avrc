@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, send_file
+from openpyxl.utils.dataframe import dataframe_to_rows
 from werkzeug.utils import secure_filename
 from flask_socketio import SocketIO
 from all_functions import start
@@ -6,6 +7,7 @@ from flask_cors import CORS
 from io import BytesIO
 import pandas as pd
 import tempfile
+import openpyxl
 import atexit
 import os
 
@@ -63,18 +65,47 @@ def fetch():
                 # Clean up the input temporary file
                 os.remove(input_file_path)
 
-                # Save processed data to a temporary Excel file
-                output = BytesIO()
-                with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-                    for key, value in agency_pivotdf_dict.items():
-                        value.to_excel(writer, sheet_name=str(key), index=False)
-                output.seek(0)
+                # Create a new workbook
+                wb = openpyxl.Workbook()
+                
+                # Remove the default sheet created
+                wb.remove(wb.active)
+
+                # Iterate through the dictionary and create sheets
+                for sheet_name, df in agency_pivotdf_dict.items():
+                    # Create a new sheet
+                    ws = wb.create_sheet(title=str(sheet_name))
+                    
+                    # Convert dataframe to rows
+                    rows = dataframe_to_rows(df, index=False, header=True)
+                    
+                    # Add rows to the sheet
+                    for r_idx, row in enumerate(rows, 1):
+                        for c_idx, value in enumerate(row, 1):
+                            ws.cell(row=r_idx, column=c_idx, value=value)
 
                 # Save to temporary file
                 temp_output = tempfile.NamedTemporaryFile(delete=False, suffix='.xlsx')
-                temp_output.write(output.getvalue())
+                wb.save(temp_output.name)
                 temp_output.close()
                 temp_file_path = temp_output.name
+
+# -------------------------------------------------------------------
+                # # Clean up the input temporary file
+                # os.remove(input_file_path)
+
+                # # Save processed data to a temporary Excel file
+                # output = BytesIO()
+                # with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+                #     for key, value in agency_pivotdf_dict.items():
+                #         value.to_excel(writer, sheet_name=str(key), index=False)
+                # output.seek(0)
+
+                # # Save to temporary file
+                # temp_output = tempfile.NamedTemporaryFile(delete=False, suffix='.xlsx')
+                # temp_output.write(output.getvalue())
+                # temp_output.close()
+                # temp_file_path = temp_output.name
 
                 socketio.emit('upload_status', {'status': 'File processed successfully'}, namespace='/')
                 return '', 200
