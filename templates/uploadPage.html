@@ -22,8 +22,13 @@
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
     </style>
 
@@ -31,11 +36,14 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            //var socket = io.connect('http://35.200.161.45:8090/');
-            var socket = io.connect('https://avrc.famekeeda.com');
+            var socket = io.connect('http://localhost:5000/');
             var fileProcessed = false;
             var loader = document.getElementById('loader');
             var fetchButton = document.getElementById('fetchButton');
+            var fileId = null;
+            var uploadForm = document.getElementById('uploadForm');
+            var fileInput = document.getElementById('fileInput');
+            var originalFileName = '';
 
             socket.on('connect', function () {
                 console.log('Connected to WebSocket');
@@ -46,18 +54,26 @@
                 document.getElementById('uploadStatus').textContent = data.status;
             });
 
-            document.getElementById('uploadForm').addEventListener('submit', function (event) {
+            function resetForm() {
+                fileProcessed = false;
+                fileId = null;
+                fetchButton.textContent = 'Fetch';
+                document.getElementById('uploadStatus').textContent = 'Status';
+                fileInput.value = '';
+                originalFileName = '';
+            }
+
+            uploadForm.addEventListener('submit', function (event) {
                 event.preventDefault();
                 if (!fileProcessed) {
                     var formData = new FormData(this);
-                    var fileInput = document.getElementById('fileInput');
-                    
+
                     if (fileInput.files.length === 0) {
                         document.getElementById('uploadStatus').textContent = 'Please select a file first';
                         return;
                     }
 
-                    // Show loader and disable button
+                    originalFileName = fileInput.files[0].name;
                     loader.style.display = 'block';
                     fetchButton.disabled = true;
 
@@ -73,43 +89,60 @@
                             fetchButton.textContent = 'Download';
                             fetchButton.disabled = false;
                             loader.style.display = 'none';
+                            fileId = response.file_id;
+                            console.log('File ID received:', fileId);
                         },
-                        error: function (xhr) {
-                            document.getElementById('uploadStatus').textContent = xhr.responseJSON.status;
+                        error: function (xhr, status, error) {
+                            console.error('Error:', xhr.responseText);
+                            document.getElementById('uploadStatus').textContent = 'Error processing file. Check console for details.';
                             fetchButton.disabled = false;
                             loader.style.display = 'none';
+                            resetForm();
                         }
                     });
                 } else {
-                    // Show loader and disable button
+                    if (!fileId) {
+                        document.getElementById('uploadStatus').textContent = 'No file ID available. Please upload a file first.';
+                        return;
+                    }
+
                     loader.style.display = 'block';
                     fetchButton.disabled = true;
 
-                    $.ajax({
-                        url: '/fetch',
-                        type: 'GET',
-                        success: function (response, status, xhr) {
-                            var filename = "";
-                            var disposition = xhr.getResponseHeader('Content-Disposition');
-                            if (disposition && disposition.indexOf('attachment') !== -1) {
-                                var filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
-                                var matches = filenameRegex.exec(disposition);
-                                if (matches != null && matches[1]) filename = matches[1].replace(/['"]/g, '');
+                    var downloadUrl = '/fetch?file_id=' + fileId;
+                    console.log('Downloading from:', downloadUrl);
+
+                    fetch(downloadUrl)
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Network response was not ok');
                             }
-                            var blob = new Blob([response], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
-                            var link = document.createElement('a');
-                            link.href = window.URL.createObjectURL(blob);
-                            link.download = filename;
-                            link.click();
+                            return response.blob();
+                        })
+                        .then(blob => {
+                            var url = window.URL.createObjectURL(blob);
+                            var a = document.createElement('a');
+                            a.href = url;
+                            
+                            // Generate the new file name
+                            var fileNameWithoutExtension = originalFileName.split('.').slice(0, -1).join('.');
+                            var newFileName = fileNameWithoutExtension + '_processed.xlsx';
+                            a.download = newFileName;
+                            
+                            document.body.appendChild(a);
+                            a.click();
+                            window.URL.revokeObjectURL(url);
+                            a.remove();
+                            resetForm();
+                        })
+                        .catch(error => {
+                            console.error('Download failed:', error);
+                            document.getElementById('uploadStatus').textContent = 'Download failed: ' + error.message;
+                        })
+                        .finally(() => {
                             fetchButton.disabled = false;
                             loader.style.display = 'none';
-                        },
-                        error: function (xhr) {
-                            document.getElementById('uploadStatus').textContent = xhr.responseJSON.status;
-                            fetchButton.disabled = false;
-                            loader.style.display = 'none';
-                        }
-                    });
+                        });
                 }
             });
         });
@@ -165,4 +198,5 @@
         window.location.href = url;
     }
 </script>
+
 </html>
