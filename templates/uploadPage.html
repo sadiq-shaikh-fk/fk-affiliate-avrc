@@ -37,6 +37,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             var socket = io.connect('http://localhost:5000/');
+            var socket = io.connect('https://https://avrc.famekeeda.com/');
             var fileProcessed = false;
             var loader = document.getElementById('loader');
             var fetchButton = document.getElementById('fetchButton');
