@@ -122,4 +122,5 @@ def generate_excel_file(agency_pivotdf_dict):
 
 # ------------------------------------- Run the app! -------------------------------------
 if __name__ == '__main__':
-    socketio.run(app, debug=True)
+    port = int(os.environ.get('PORT', 8090))
+    socketio.run(app, host='0.0.0.0', port=port)
