@@ -10,6 +10,7 @@ import uuid
 import os
 
 app = Flask(__name__)
+app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100 MB limit
 
 # Ensure CORS is enabled
 CORS(app, resources={r"/*": {"origins": "*"}})
