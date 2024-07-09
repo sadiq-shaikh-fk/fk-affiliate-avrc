@@ -64,6 +64,17 @@
                 originalFileName = '';
             }
 
+            document.getElementById('uploadForm').addEventListener('submit', function (event) {
+                event.preventDefault();
+                var fileInput = document.getElementById('fileInput');
+                var file = fileInput.files[0];
+
+                if (file && file.size > 100 * 1024 * 1024) {  // 100 MB in bytes
+                    alert('File is too large. Maximum size is 100 MB.');
+                    return;
+                }
+            });
+
             uploadForm.addEventListener('submit', function (event) {
                 event.preventDefault();
                 if (!fileProcessed) {
