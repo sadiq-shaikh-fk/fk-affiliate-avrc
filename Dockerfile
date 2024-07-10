@@ -23,4 +23,4 @@ EXPOSE 8090
 ENV FLASK_APP=main.py
 
 # Run app.py when the container launches
-CMD ["gunicorn", "--worker-class", "eventlet", "-w", "1", "--bind", "unix:/run/gunicorn/gunicorn.sock", "main:app"]
+CMD ["gunicorn", "--worker-class", "eventlet", "-w", "1", "--bind", "unix:/run/gunicorn/gunicorn.sock", "--max-requests", "1000", "--timeout", "120", "--limit-request-line", "0", "--limit-request-fields", "32768", "--limit-request-field_size", "0", "main:app"]
