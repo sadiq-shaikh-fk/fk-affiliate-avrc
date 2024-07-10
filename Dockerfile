@@ -13,6 +13,9 @@ RUN pip install --upgrade pip
 # Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Create a directory for the socket with appropriate permissions
+RUN mkdir -p /run/gunicorn && chmod 777 /run/gunicorn
+
 # Make port 8090 available to the world outside this container
 EXPOSE 8090
 
@@ -20,4 +23,4 @@ EXPOSE 8090
 ENV FLASK_APP=main.py
 
 # Run app.py when the container launches
-CMD ["gunicorn", "--worker-class", "eventlet", "-w", "1", "--bind", "unix:/tmp/gunicorn.sock", "main:app"]
+CMD ["gunicorn", "--worker-class", "eventlet", "-w", "1", "--bind", "unix:/run/gunicorn/gunicorn.sock", "main:app"]
