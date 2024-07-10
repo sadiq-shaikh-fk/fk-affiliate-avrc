@@ -95,6 +95,7 @@ def creating_pivot_agency_wise(data_merged_lead):
     
     # from the df of dict generating pivot for each df
     pivoted_df = []
+    
     for each_df in list_of_agency_df:
         each_df_pivot = pd.pivot_table(each_df, index='Primary Source Campaign', columns='Lead Stage', values='Mobile Number', aggfunc='count', fill_value=0)
 
@@ -111,20 +112,30 @@ def creating_pivot_agency_wise(data_merged_lead):
         for col in required_columns:
             if col not in each_df_pivot.columns:
                 each_df_pivot[col] = 0
+        
+        # Reorder the columns
+        # each_df_pivot = each_df_pivot[['Primary Source Campaign'] + required_columns]
 
         # renaming pivot column index to Primary Source Campaign
         each_df_pivot.rename(columns={'index':'Primary Source Campaign'}, inplace=True)
-    
+        
         # merging Bitly Links to it ---- # Create a dictionary to map 'Primary Source Campaign' to 'Bitly Link'
         campaign_to_bitly = each_df.set_index('Primary Source Campaign')['Bitly Link'].to_dict()
 
         # Add 'Bitly Link' column to data_merged_pivot by mapping
         each_df_pivot['Bitly Link'] = each_df_pivot['Primary Source Campaign'].map(campaign_to_bitly)
+        
+        each_df_pivot = each_df_pivot[["Bitly Link", "Primary Source Campaign", "999-Account Opened", "L2-in process", "L4-Account Opened"]]
+
+        # Adding a new column 'Grand Total' which is the sum of the specified columns
+        each_df_pivot["Grand Total"] = each_df_pivot[["999-Account Opened", "L2-in process", "L4-Account Opened"]].sum(axis=1)
 
         pivoted_df.append(each_df_pivot)
-    
+
     agency_pivotdf_dict = agency_dfs.copy()
     agency_pivotdf_dict.update(dict(zip(agency_dfs.keys(), pivoted_df)))
+
+
     return agency_pivotdf_dict
 
 # ------------------------- supporting functions ---------------------------
