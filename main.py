@@ -70,7 +70,7 @@ def fetch():
                 processed_data[file_id] = zip_of_excel
 
                 socketio.emit('upload_status', {'status': 'Files processed and zipped successfully'}, namespace='/')
-                return {'status': 'File zipped successfully', 'file_id': file_id}, 200  # Return file_id to client
+                return {'status': 'Files processed and zipped successfully', 'file_id': file_id}, 200  # Return file_id to client
             except Exception as e:
                 error_msg = f"Error processing file: {str(e)}\n{traceback.format_exc()}"
                 print(error_msg)  # Print to server console
