@@ -1,4 +1,228 @@
-<!-- <!DOCTYPE html>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1, width=device-width">
+    <title>File Upload and Download</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;700&display=swap" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
+
+    <style>
+        .loader {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+            display: none;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var socket = io.connect('https://avrc.famekeeda.com/');
+            var fileProcessed = false;
+            var loader = document.getElementById('loader');
+            var fetchButton = document.getElementById('fetchButton');
+            var fileId = null;
+            var uploadForm = document.getElementById('uploadForm');
+            var fileInput = document.getElementById('fileInput');
+            var originalFileName = '';
+
+            socket.on('connect', function () {
+                console.log('Connected to WebSocket');
+            });
+
+            socket.on('upload_status', function (data) {
+                console.log('Received status:', data.status);
+                document.getElementById('uploadStatus').textContent = data.status;
+            });
+
+            function resetForm() {
+                fileProcessed = false;
+                fileId = null;
+                fetchButton.textContent = 'Fetch';
+                document.getElementById('uploadStatus').textContent = 'Status';
+                fileInput.value = '';
+                originalFileName = '';
+            }
+
+            document.getElementById('uploadForm').addEventListener('submit', function (event) {
+                event.preventDefault();
+                var file = fileInput.files[0];
+
+                if (file && file.size > 100 * 1024 * 1024) {  // 100 MB in bytes
+                    alert('File is too large. Maximum size is 100 MB.');
+                    return;
+                }
+
+                if (!fileProcessed) {
+                    var formData = new FormData(uploadForm);
+
+                    if (fileInput.files.length === 0) {
+                        document.getElementById('uploadStatus').textContent = 'Please select a file first';
+                        return;
+                    }
+
+                    originalFileName = fileInput.files[0].name;
+                    loader.style.display = 'block';
+                    fetchButton.disabled = true;
+
+                    $.ajax({
+                        url: '/fetch',
+                        type: 'POST',
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                        xhr: function() {
+                            var xhr = new window.XMLHttpRequest();
+                            xhr.upload.addEventListener("progress", function(evt) {
+                                if (evt.lengthComputable) {
+                                    var percentComplete = evt.loaded / evt.total;
+                                    $('.progress-bar').width(percentComplete * 100 + '%');
+                                }
+                            }, false);
+                            return xhr;
+                        },
+                        success: function (response) {
+                            document.getElementById('uploadStatus').textContent = response.status;
+                            fileProcessed = true;
+                            fetchButton.textContent = 'Download';
+                            fetchButton.disabled = false;
+                            loader.style.display = 'none';
+                            fileId = response.file_id;
+                            console.log('File ID received:', fileId);
+                        },
+                        error: function (xhr, status, error) {
+                            console.error('Error:', xhr.responseText);
+                            var errorMessage = 'Error processing file.';
+                            if (xhr.responseJSON && xhr.responseJSON.status) {
+                                errorMessage = xhr.responseJSON.status;
+                            }
+                            document.getElementById('uploadStatus').textContent = errorMessage;
+                            fetchButton.disabled = false;
+                            loader.style.display = 'none';
+                            resetForm();
+                        }
+                    });
+                } else {
+                    if (!fileId) {
+                        document.getElementById('uploadStatus').textContent = 'No file ID available. Please upload a file first.';
+                        return;
+                    }
+
+                    loader.style.display = 'block';
+                    fetchButton.disabled = true;
+
+                    var downloadUrl = '/fetch?file_id=' + fileId;
+                    console.log('Downloading from:', downloadUrl);
+
+                    fetch(downloadUrl)
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Network response was not ok');
+                            }
+                            return response.blob();
+                        })
+                        .then(blob => {
+                            var url = window.URL.createObjectURL(blob);
+                            var a = document.createElement('a');
+                            a.href = url;
+                            
+                            // Generate the new file name
+                            var fileNameWithoutExtension = originalFileName.split('.').slice(0, -1).join('.');
+                            var newFileName = fileNameWithoutExtension + '.zip';
+                            a.download = newFileName;
+                            
+                            document.body.appendChild(a);
+                            a.click();
+                            window.URL.revokeObjectURL(url);
+                            a.remove();
+                            resetForm();
+                        })
+                        .catch(error => {
+                            console.error('Download failed:', error);
+                            document.getElementById('uploadStatus').textContent = 'Download failed: ' + error.message;
+                        })
+                        .finally(() => {
+                            fetchButton.disabled = false;
+                            loader.style.display = 'none';
+                        });
+                }
+            });
+        });
+    </script>
+</head>
+
+<body>
+    <div class="combine-container">
+        <div class="uploading-process">
+            <div class="white-background" id="whiteBackground">
+                <form id="uploadForm" method="post" enctype="multipart/form-data">
+                    <div class="heading-upload">
+                        <b class="upload">Upload Your Files</b>
+                    </div>
+                    <div class="file-upload-area">
+                        <div class="upload-file-background" id="dropArea">
+                            <div class="upload-icon-container">
+                                <i class="fa fa-upload" style="font-size:24px"></i>
+                            </div>
+                            <div class="drag-drop-files">
+                                <b class="drag-drop-container">
+                                    <span class="drag-drop">Drag & drop files or</span>
+                                    <span class="span"> </span>
+                                    <label for="fileInput" class="upload-label">Choose a file</label>
+                                    <input type="file" id="fileInput" name="file" accept=".csv"
+                                        title="Select a CSV file" placeholder="Select a CSV file">
+                                    <span class="browse" id="browseText">Browse</span> <br /><br />
+                                    <span class="drag-drop">Only one column required with name 'channel_link'</span>
+                                </b>
+                            </div>
+                            <div class="supported-formats">
+                                <div class="supported-formates-jpeg">Supported File : '.csv'</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="uploadingFiles"></div>
+                    <div class="heading-uploaded1">
+                        <div id="uploadStatus">Status</div>
+                    </div>
+                    <div id="uploadedFiles"></div>
+                    <div id="loader" class="loader"></div>
+                    <button id="fetchButton" class="cta" type="submit">Fetch</button> <br />
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+<script src="{{ url_for('static', filename='js/dragdrop.js') }}"></script>
+<script>
+    //navigation code
+    function navigateTo(url) {
+        window.location.href = url;
+    }
+</script>
+</html>
+
+<!-- 
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -211,223 +435,5 @@
     }
 </script>
 
-</html> -->
-
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="initial-scale=1, width=device-width">
-    <title>File Upload and Download</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;700&display=swap" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
-
-    <style>
-        .loader {
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid #3498db;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
-            display: none;
-        }
-
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
-        }
-    </style>
-
-    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            var socket = io.connect('https://avrc.famekeeda.com/');
-            var fileProcessed = false;
-            var loader = document.getElementById('loader');
-            var fetchButton = document.getElementById('fetchButton');
-            var fileId = null;
-            var uploadForm = document.getElementById('uploadForm');
-            var fileInput = document.getElementById('fileInput');
-            var originalFileName = '';
-
-            socket.on('connect', function () {
-                console.log('Connected to WebSocket');
-            });
-
-            socket.on('upload_status', function (data) {
-                console.log('Received status:', data.status);
-                document.getElementById('uploadStatus').textContent = data.status;
-            });
-
-            function resetForm() {
-                fileProcessed = false;
-                fileId = null;
-                fetchButton.textContent = 'Fetch';
-                document.getElementById('uploadStatus').textContent = 'Status';
-                fileInput.value = '';
-                originalFileName = '';
-            }
-
-            document.getElementById('uploadForm').addEventListener('submit', function (event) {
-                event.preventDefault();
-                var file = fileInput.files[0];
-
-                if (file && file.size > 100 * 1024 * 1024) {  // 100 MB in bytes
-                    alert('File is too large. Maximum size is 100 MB.');
-                    return;
-                }
-
-                if (!fileProcessed) {
-                    var formData = new FormData(uploadForm);
-
-                    if (fileInput.files.length === 0) {
-                        document.getElementById('uploadStatus').textContent = 'Please select a file first';
-                        return;
-                    }
-
-                    originalFileName = fileInput.files[0].name;
-                    loader.style.display = 'block';
-                    fetchButton.disabled = true;
-
-                    $.ajax({
-                        url: '/fetch',
-                        type: 'POST',
-                        data: formData,
-                        processData: false,
-                        contentType: false,
-                        xhr: function() {
-                            var xhr = new window.XMLHttpRequest();
-                            xhr.upload.addEventListener("progress", function(evt) {
-                                if (evt.lengthComputable) {
-                                    var percentComplete = evt.loaded / evt.total;
-                                    $('.progress-bar').width(percentComplete * 100 + '%');
-                                }
-                            }, false);
-                            return xhr;
-                        },
-                        success: function (response) {
-                            document.getElementById('uploadStatus').textContent = response.status;
-                            fileProcessed = true;
-                            fetchButton.textContent = 'Download';
-                            fetchButton.disabled = false;
-                            loader.style.display = 'none';
-                            fileId = response.file_id;
-                            console.log('File ID received:', fileId);
-                        },
-                        error: function (xhr, status, error) {
-                            console.error('Error:', xhr.responseText);
-                            document.getElementById('uploadStatus').textContent = 'Error processing file. Check console for details.';
-                            fetchButton.disabled = false;
-                            loader.style.display = 'none';
-                            resetForm();
-                        }
-                    });
-                } else {
-                    if (!fileId) {
-                        document.getElementById('uploadStatus').textContent = 'No file ID available. Please upload a file first.';
-                        return;
-                    }
-
-                    loader.style.display = 'block';
-                    fetchButton.disabled = true;
-
-                    var downloadUrl = '/fetch?file_id=' + fileId;
-                    console.log('Downloading from:', downloadUrl);
-
-                    fetch(downloadUrl)
-                        .then(response => {
-                            if (!response.ok) {
-                                throw new Error('Network response was not ok');
-                            }
-                            return response.blob();
-                        })
-                        .then(blob => {
-                            var url = window.URL.createObjectURL(blob);
-                            var a = document.createElement('a');
-                            a.href = url;
-                            
-                            // Generate the new file name
-                            var fileNameWithoutExtension = originalFileName.split('.').slice(0, -1).join('.');
-                            var newFileName = fileNameWithoutExtension + '_processed.xlsx';
-                            a.download = newFileName;
-                            
-                            document.body.appendChild(a);
-                            a.click();
-                            window.URL.revokeObjectURL(url);
-                            a.remove();
-                            resetForm();
-                        })
-                        .catch(error => {
-                            console.error('Download failed:', error);
-                            document.getElementById('uploadStatus').textContent = 'Download failed: ' + error.message;
-                        })
-                        .finally(() => {
-                            fetchButton.disabled = false;
-                            loader.style.display = 'none';
-                        });
-                }
-            });
-        });
-    </script>
-</head>
-
-<body>
-    <div class="combine-container">
-        <div class="uploading-process">
-            <div class="white-background" id="whiteBackground">
-                <form id="uploadForm" method="post" enctype="multipart/form-data">
-                    <div class="heading-upload">
-                        <b class="upload">Upload Your Files</b>
-                    </div>
-                    <div class="file-upload-area">
-                        <div class="upload-file-background" id="dropArea">
-                            <div class="upload-icon-container">
-                                <i class="fa fa-upload" style="font-size:24px"></i>
-                            </div>
-                            <div class="drag-drop-files">
-                                <b class="drag-drop-container">
-                                    <span class="drag-drop">Drag & drop files or</span>
-                                    <span class="span"> </span>
-                                    <label for="fileInput" class="upload-label">Choose a file</label>
-                                    <input type="file" id="fileInput" name="file" accept=".csv"
-                                        title="Select a CSV file" placeholder="Select a CSV file">
-                                    <span class="browse" id="browseText">Browse</span> <br /><br />
-                                    <span class="drag-drop">Only one column required with name 'channel_link'</span>
-                                </b>
-                            </div>
-                            <div class="supported-formats">
-                                <div class="supported-formates-jpeg">Supported File : '.csv'</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div id="uploadingFiles"></div>
-                    <div class="heading-uploaded1">
-                        <div id="uploadStatus">Status</div>
-                    </div>
-                    <div id="uploadedFiles"></div>
-                    <div id="loader" class="loader"></div>
-                    <button id="fetchButton" class="cta" type="submit">Fetch</button> <br />
-                </form>
-            </div>
-        </div>
-    </div>
-</body>
-<script src="{{ url_for('static', filename='js/main.js') }}"></script>
-<script src="{{ url_for('static', filename='js/dragdrop.js') }}"></script>
-<script>
-    //navigation code
-    function navigateTo(url) {
-        window.location.href = url;
-    }
-</script>
-</html>
+</html> 
+-->
