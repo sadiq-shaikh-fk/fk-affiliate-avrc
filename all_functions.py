@@ -131,6 +131,12 @@ def creating_pivot_agency_wise(data_merged_lead):
 
         # Add 'Bitly Link' column to data_merged_pivot by mapping
         each_df_pivot['Bitly Link'] = each_df_pivot['Primary Source Campaign'].map(campaign_to_bitly)
+    
+        # re-arranging the columns as per the requirements 
+        each_df_pivot = each_df_pivot[["Bitly Link", "Primary Source Campaign", "999-Account Opened", "L2-in process", "L4-Account Opened"]]
+
+        # Adding a new column 'Grand Total' which is the sum of the specified columns
+        each_df_pivot["Grand Total"] = each_df_pivot[["999-Account Opened", "L2-in process", "L4-Account Opened"]].sum(axis=1)
 
         pivoted_df.append(each_df_pivot)
 
