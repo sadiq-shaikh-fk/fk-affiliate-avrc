@@ -15,7 +15,7 @@ if you want to install into a new machine here are the steps
    - git clone git <link>
    - git pull if changes are there
 
- 3. run the commands
+3. run the commands
    - sudo docker-compose build
    - sudo docker-compose up (-d parameter for running in the background)
    - sudo docker-compose ps (to check if the docker container is running or not)
