@@ -15,14 +15,14 @@ if you want to install into a new machine here are the steps
    - git clone git <link>
    - git pull if changes are there
 
- 4. run the commands
+ 3. run the commands
    - sudo docker-compose build
    - sudo docker-compose up (-d parameter for running in the background)
    - sudo docker-compose ps (to check if the docker container is running or not)
    - sudo docker-compose logs <container id>
    - sudo docker-compose down (to stop the container)
 
-5. setup nignx
+4. setup nignx
    - go to /etc/nginx/sites-available/
    - create a file (name it as domain name - avrc.famekeeda.com)
    - set reverse proxy for it
